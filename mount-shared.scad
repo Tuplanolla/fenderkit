@@ -22,19 +22,23 @@ y_cut = 10;
 z_cut = 3;
 /// Leeway for the chamfers on the rails (for avoiding sharp corners).
 e_cut = 0.5;
+/// Number of teeth on the back.
+n_teeth_back = undef;
+/// Number of teeth on the front.
+n_teeth_front = undef;
 /// Length of each tooth.
 x_tooth = 2;
 /// Distance between the edges of adjacent teeth.
 x_step = 4;
 /// Diameter of the hole.
 d_hole = 5.5;
-/// Inner diameter of the pillar (width of the hexagon).
-d_pillar_head = 8;
-/// Outer diameter of the pillar (diameter of the circle).
-d_pillar_foot = 14;
-/// Heights of the pillar.
-z_pillar_foot = 7;
-z_pillar_head = 4;
+/// Outer diameter of the insert (diameter of the circle).
+d_insert_foot = 14;
+/// Inner diameter of the insert (width of the hexagon).
+d_insert_head = 8;
+/// Heights of the insert.
+z_insert_foot = 7;
+z_insert_head = 4;
 /// Arrow head length.
 x_arrow_head = 4;
 /// Arrow head width.
@@ -53,4 +57,4 @@ a_rails = 10;
 scale_rails = true;
 
 /// It just so happens!
-echo(r_cut = y_cut / 2 + z_head, r_pillar_foot = d_pillar_foot / 2);
+echo(r_cut = y_cut / 2 + z_head, r_insert_foot = d_insert_foot / 2);

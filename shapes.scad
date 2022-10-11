@@ -1,21 +1,142 @@
+use <functions.scad>
 use <operations.scad>
 
-/// The invocation `hollow_cylinder(h, r0, r1)` produces a hollow cylinder
-/// with the height `h`, the inner radius `r0` and the outer radius `r1`.
-/// The base of the cylinder is placed at the origin and
+/// ## Two-Dimensional Shapes
+
+/// The invocation `circle_inscribed(r)`
+/// produces a regular polygon with `$fn` sides and the inner radius `r`,
+/// approximating a circle from the inside.
+module circle_inscribed(r) {
+  circle(r);
+}
+
+/// The invocation `circle_circumscribed(r)`
+/// produces a regular polygon with `$fn` sides and the outer radius `r`,
+/// approximating a circle from the outside.
+module circle_circumscribed(r) {
+  let (c = circumscription_factor())
+    circle(c * r);
+}
+
+/// The invocation `circle_medial(r)`
+/// produces a regular polygon with `$fn` sides and the mean radius `r`,
+/// approximating a circle.
+module circle_medial(r) {
+  let (c = mean(1, circumscription_factor()))
+    circle(c * r);
+}
+
+/// The invocation `hexagon_inscribed(r)`
+/// produces a regular hexagon with the outer radius `r`.
+module hexagon_inscribed(r) {
+  circle_inscribed(r, $fn = 6);
+}
+
+/// The invocation `hexagon_circumscribed(r)`
+/// produces a regular hexagon with the inner radius `r`.
+module hexagon_circumscribed(r) {
+  circle_circumscribed(r, $fn = 6);
+}
+
+/// The invocation `right_triangle(x, y)`
+/// produces a right triangle with the side lengths `x` and `y`.
+/// The right angle of the triangle is placed at the origin.
+module right_triangle(x, y) {
+  polygon([[0, 0], [x, 0], [0, y]]);
+}
+
+/// The invocation `isosceles_right_triangle(x)`
+/// produces an isosceles right triangle with the side length `x`.
+/// The right angle of the triangle is placed at the origin.
+module isosceles_right_triangle(x) {
+  right_triangle(x, x);
+}
+
+/// The invocation `cross_shape(w, d)`
+/// produces a cross shape with the width `w` and thickness `d`.
+/// The center of the shape is placed at the origin.
+module cross(w, d) {
+  rotate_copy([0, 0, 90])
+    translate([- w / 2, - d / 2, 0])
+    square([w, d]);
+}
+
+/// ## Three-Dimensional Shapes
+
+/// The invocation `cone_inscribed(h, r0, r1)`
+/// produces a regular polygonal prism with `$fn` sides, the height `h`,
+/// the intitial inner radius `r0` and the terminal inner radius `r1`.
+/// The base of the prism is placed at the origin and
+/// its height grows along the `z` axis.
+module cone_inscribed(h, r0, r1) {
+  cylinder(h, r1 = r0, r2 = r1);
+}
+
+/// The invocation `cone_circumscribed(h, r0, r1)`
+/// produces a regular polygonal prism with `$fn` sides, the height `h`,
+/// the intitial outer radius `r0` and the terminal outer radius `r1`.
+/// The base of the prism is placed at the origin and
+/// its height grows along the `z` axis.
+module cone_circumscribed(h, r0, r1) {
+  let (c = circumscription_factor())
+    cylinder(h, r1 = c * r0, r2 = c * r1);
+}
+
+/// The invocation `cone_medial(h, r0, r1)`
+/// produces a regular polygonal prism with `$fn` sides, the height `h`,
+/// the intitial mean radius `r0` and the terminal mean radius `r1`.
+/// The base of the prism is placed at the origin and
+/// its height grows along the `z` axis.
+module cone_medial(h, r0, r1) {
+  let (c = mean(1, circumscription_factor()))
+    cylinder(h, r1 = c * r0, r2 = c * r1);
+}
+
+/// The invocation `cylinder_inscribed(h, r)`
+/// produces a regular polygonal prism with `$fn` sides,
+/// the height `h` and the inner radius `r`.
+/// The base of the prism is placed at the origin and
+/// its height grows along the `z` axis.
+module cylinder_inscribed(h, r) {
+  cone_inscribed(h, r, r);
+}
+
+/// The invocation `cylinder_circumscribed(h, r)`
+/// produces a regular polygonal prism with `$fn` sides,
+/// the height `h` and the outer radius `r`.
+/// The base of the prism is placed at the origin and
+/// its height grows along the `z` axis.
+module cylinder_circumscribed(h, r) {
+  cone_circumscribed(h, r, r);
+}
+
+/// The invocation `cylinder_medial(h, r)`
+/// produces a regular polygonal prism with `$fn` sides,
+/// the height `h` and the mean radius `r`.
+/// The base of the prism is placed at the origin and
+/// its height grows along the `z` axis.
+module cylinder_medial(h, r) {
+  cone_medial(h, r, r);
+}
+
+/// The invocation `hollow_cylinder(h, r0, r1)`
+/// produces a hollow regular polygonal prism with `$fn` sides,
+/// the height `h`, the inner radius `r0` and the outer radius `r1`.
+/// The base of the prism is placed at the origin and
 /// its height grows along the `z` axis.
 module hollow_cylinder(h, r0, r1) {
   difference() {
-    cylinder(h, r1, r1);
+    cylinder_circumscribed(h, r1);
     translate([0, 0, - $e])
-      cylinder(2 * $e + h, r0, r0);
+      cylinder_inscribed(2 * $e + h, r0);
   }
 }
 
 /// The invocation `hollow_cylinder_quadrant(h, r0, r1)`
-/// produces the first quadrant of a hollow cylinder
-/// with the height `h`, the inner radius `r0` and the outer radius `r1`.
-/// The base of the cylinder is placed at the origin and
+/// produces the first quadrant of a hollow regular polygonal prism
+/// with `$fn` sides, the height `h`,
+/// the inner radius `r0` and the outer radius `r1`.
+/// The base of the prism is placed at the origin and
 /// its height grows along the `z` axis.
 module hollow_cylinder_quadrant(h, r0, r1) {
   intersection() {
@@ -25,7 +146,36 @@ module hollow_cylinder_quadrant(h, r0, r1) {
   }
 }
 
-/// The invocation `torus(r0, r1)` produces a torus
+/// The invocation `hexagonal_prism(h, r)`
+/// produces a regular hexagonal prism
+/// with the height `h` and inner radius `r`.
+/// The center of the prism is placed at the origin and
+/// its height grows along the `z` axis.
+module hexagonal_prism(h, r) {
+  cylinder_circumscribed(h, r, $fn = 6);
+}
+
+/// The invocation `right_triangular_prism(h, x, y)`
+/// produces a right triangular prism
+/// with the height `h` and side lengths `x` and `y`.
+/// The right angle of the triangle is placed at the origin and
+/// its height grows along the `z` axis.
+module right_triangular_prism(h, x, y) {
+  linear_extrude(h)
+    right_triangle(x, y);
+}
+
+/// The invocation `isosceles_right_triangular_prism(h, x)`
+/// produces an isosceles right triangular prism
+/// with the height `h` and side length `x`.
+/// The right angle of the triangle is placed at the origin and
+/// its height grows along the `z` axis.
+module isosceles_right_triangular_prism(h, x) {
+  right_triangular_prism(h, x, x);
+}
+
+/// The invocation `torus(r0, r1)`
+/// produces an approximation of a toroidal surface
 /// with the toroidal radius (the distance
 /// from the center of mass of the torus
 /// to the centerline of the tube) `r0` and
@@ -41,82 +191,26 @@ module torus(r0, r1) {
     circle(r1);
 }
 
-/// The invocation `skew_triangle(x, y)` produces a right triangle
-/// with the side lengths `x` and `y`.
-/// The right angle of the triangle is placed at the origin.
-module skew_triangle(x, y) {
-  polygon([[0, 0], [x, 0], [0, y]]);
-}
-
-/// The invocation `skew_triangular_prism(x, y, z)`
-/// produces a right triangular prism
-/// with the side lengths `x` and `y` and height `z`.
-/// The right angle of the triangle is placed at the origin and
+/// The invocation `cross_shaped_prism(w, t, h)`
+/// produces a cross-shaped prism
+/// with the width `w`, the thickness `t` and the height `h`.
+/// The center of the prism is placed at the origin and
 /// its height grows along the `z` axis.
-module skew_triangular_prism(x, y, z) {
-  linear_extrude(z)
-    skew_triangle(x, y);
+module cross_shaped_prism(w, t, h) {
+  rotate_copy([0, 0, 90])
+    translate([- w / 2, - t / 2, 0])
+    cube([w, t, h]);
 }
 
-/// The invocation `triangle(x)` produces an isosceles right triangle
-/// with the side length `x`.
-/// The right angle of the triangle is placed at the origin.
-module triangle(x) {
-  skew_triangle(x, x);
-}
-
-/// The invocation `triangular_prism(x, z)`
-/// produces an isosceles right triangular prism
-/// with the side length `x` and height `z`.
-/// The right angle of the triangle is placed at the origin and
+/// The invocation `rounded_cross_shaped_prism(d, t, h)`
+/// produces a rounded cross-shaped prism
+/// with the diameter `d`, the thickness `t` and the height `h`.
+/// The center of the prism is placed at the origin and
 /// its height grows along the `z` axis.
-module triangular_prism(x, z) {
-  skew_triangular_prism(x, x, z);
-}
-
-/// TODO These.
-
-module hexagon(r) {
-  circle_out(r, fn = 6);
-}
-
-module hexagonal_prism(r, h) {
-  linear_extrude(h)
-    hexagon(r);
-}
-
-module cross(r, h, w) {
-  let (d = 2 * r / cos(30) * cos(60))
-    rotate_copy([0, 0, 90])
-    mirror_copy([1, 0, 0])
-    translate([0, - d / 2, 0])
-    cube([w / 2, d, h]);
-}
-
-module rounded_cross(r, h, w) {
+module rounded_cross_shaped_prism(d, t, h) {
   intersection() {
-    cross(r, h, w);
+    cross_shaped_prism(d, t, h);
     translate([0, 0, - $e])
-      cylinder(h + 2 * $e, w / 2, w / 2);
+      cylinder(h + 2 * $e, d / 2, d / 2);
   }
-}
-
-module cylinder_out(height,radius,fn){
-  let (fudge = (1+1/cos(180/fn)))
-    cylinder(h=height,r=radius*fudge,$fn=fn);
-}
-
-module cylinder_mid(height,radius,fn){
-  let (fudge = (1+1/cos(180/fn))/2)
-    cylinder(h=height,r=radius*fudge,$fn=fn);
-}
-
-module cone_mid(height,radius,radiuser,fn){
-  let (fudge = (1+1/cos(180/fn))/2)
-    cylinder(height,radius*fudge,radiuser*fudge,$fn=fn);
-}
-
-module circle_out(radius,fn){
-  let (fudge = 1/cos(180/fn))
-    circle(r=radius*fudge,$fn=fn);
 }

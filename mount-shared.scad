@@ -30,8 +30,10 @@ n_teeth_front = undef;
 x_tooth = 2;
 /// Distance between the edges of adjacent teeth.
 x_step = 4;
-/// Diameter of the hole.
+/// Diameter of the hole at the top.
 d_hole = 5.5;
+/// Diameter of the hole at the bottom.
+d_countersink = y_cut;
 /// Outer diameter of the insert (diameter of the circle).
 d_insert_foot = 14;
 /// Inner diameter of the insert (width of the hexagon).
@@ -52,9 +54,13 @@ z_arrow = 0.5;
 /// Arrow head distance from the edge.
 x_arrow_dist = 1;
 /// Angle of the rails.
-a_rails = 10;
+/// The original angle is flat.
+// a_rails = 0;
+/// This angle has been tested to work with a 2020 rigid fat bike,
+/// a 2021 hard-tail jump bike and a 2022 full-suspension trail bike.
+a_rails = 8;
 /// Whether to scale the rails with respect to the angle.
 scale_rails = true;
 
 /// It just so happens!
-echo(r_cut = y_cut / 2 + z_head, r_insert_foot = d_insert_foot / 2);
+echo(r_cut = d_countersink / 2 + z_head, r_insert_foot = d_insert_foot / 2);

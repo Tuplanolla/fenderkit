@@ -130,14 +130,16 @@ module half_tooth(y_cut, z_cut, e_cut, x_tooth) {
     right_triangular_prism(y_cut / 2, x_tooth, z_cut);
 }
 
-module half_teeth(y_cut, z_cut, e_cut,
+module half_teeth(y_cut, z_cut, e_cut, r_countersink,
     n_teeth_back, n_teeth_front, x_tooth, x_step) {
-  for (i = [0 : n_teeth_front - 1])
-    translate([y_cut / 2 + x_tooth + x_step * i, 0, 0])
-    half_tooth(y_cut, z_cut, e_cut, x_tooth);
-  for (i = [0 : n_teeth_back - 1])
-    translate([- (y_cut / 2 + x_tooth + x_step * i), 0, 0])
-    half_tooth(y_cut, z_cut, e_cut, x_tooth);
+  let (x_offset = x_tooth * ceil(r_countersink / x_tooth)) {
+    for (i = [0 : n_teeth_front - 1])
+      translate([x_offset + x_tooth + x_step * i, 0, 0])
+      half_tooth(y_cut, z_cut, e_cut, x_tooth);
+    for (i = [0 : n_teeth_back - 1])
+      translate([- (x_offset + x_tooth + x_step * i), 0, 0])
+      half_tooth(y_cut, z_cut, e_cut, x_tooth);
+  }
 }
 
 module carved_rails(x_part_back, x_part_front,
@@ -145,7 +147,8 @@ module carved_rails(x_part_back, x_part_front,
     z_foot, z_web, z_head,
     y_cut, z_cut, e_cut,
     n_teeth_back, n_teeth_front, x_tooth, x_step,
-    r_insert_foot, r_insert_head, z_insert_foot, z_insert_head,
+    r_countersink, r_insert_foot, r_insert_head,
+    z_insert_foot, z_insert_head,
     a_rails, scale_rails) {
   mirror_copy([0, 1, 0])
     translate([- head_y(z_foot + z_web, a_rails), 0,
@@ -163,7 +166,7 @@ module carved_rails(x_part_back, x_part_front,
             y_cut, z_cut + $e]);
         }
       translate([0, 0, z_cut])
-        half_teeth(y_cut, z_cut, e_cut,
+        half_teeth(y_cut, z_cut, e_cut, r_countersink,
             n_teeth_back, n_teeth_front, x_tooth, x_step);
     }
   carved_head(x_part_back, x_part_front,
@@ -176,7 +179,8 @@ module carved_rails(x_part_back, x_part_front,
 module mount(x_part_back, x_part_front,
     y_foot, y_web, y_head, z_foot, z_web, z_head,
     y_cut, z_cut, e_cut, n_teeth_back, n_teeth_front, x_tooth, x_step,
-    r_hole, r_insert_foot, r_insert_head, z_insert_foot, z_insert_head,
+    r_countersink, r_hole, r_insert_foot, r_insert_head,
+    z_insert_foot, z_insert_head,
     a_rails, scale_rails) {
   difference() {
     carved_rails(x_part_back, x_part_front,
@@ -184,10 +188,10 @@ module mount(x_part_back, x_part_front,
         z_foot, z_web, z_head,
         y_cut, z_cut, e_cut,
         n_teeth_back, n_teeth_front, x_tooth, x_step,
-        r_insert_foot, r_insert_head, z_insert_foot, z_insert_head,
+        r_countersink, r_insert_foot, r_insert_head,
+        z_insert_foot, z_insert_head,
         a_rails, scale_rails);
-    let (h_head = z_head + head_z(x_part_back + x_part_front, a_rails),
-        r_countersink = y_cut / 2) {
+    let (h_head = z_head + head_z(x_part_back + x_part_front, a_rails)) {
       translate([0, 0, - h_head - $e])
         cylinder_medial(z_cut + h_head + 2 * $e, r_countersink);
       translate([0, 0, z_cut])
@@ -216,14 +220,16 @@ module arrow_decoration(x_arrow_head, y_arrow_head, x_arrow_tail, y_arrow_tail,
 module decorated_mount(x_part_back, x_part_front,
     y_foot, y_web, y_head, z_foot, z_web, z_head,
     y_cut, z_cut, e_cut, n_teeth_back, n_teeth_front, x_tooth, x_step,
-    r_hole, r_insert_foot, r_insert_head, z_insert_foot, z_insert_head,
+    r_countersink, r_hole, r_insert_foot, r_insert_head,
+    z_insert_foot, z_insert_head,
     x_arrow_head, y_arrow_head, x_arrow_tail, y_arrow_tail,
     z_arrow, x_arrow_dist,
     a_rails, scale_rails) {
   mount(x_part_back, x_part_front,
       y_foot, y_web, y_head, z_foot, z_web, z_head,
       y_cut, z_cut, e_cut, n_teeth_back, n_teeth_front, x_tooth, x_step,
-      r_hole, r_insert_foot, r_insert_head, z_insert_foot, z_insert_head,
+      r_countersink, r_hole, r_insert_foot, r_insert_head,
+      z_insert_foot, z_insert_head,
       a_rails, scale_rails);
   translate([x_part_front - x_arrow_dist, 0, z_foot + z_web + z_head])
     arrow_decoration(x_arrow_head, y_arrow_head, x_arrow_tail, y_arrow_tail,
